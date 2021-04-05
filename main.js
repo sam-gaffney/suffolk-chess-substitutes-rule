@@ -2,6 +2,8 @@ const csv = require('csv-parse');
 const fs = require('fs');
 const utilities = require('./utilities.js');
 const constants = require('./constants.js');
+const repository = require('./matchRepository.js');
+const validations = require('./validations.js');
 
 
 const leagueId = 37698;
@@ -73,183 +75,6 @@ const generateListOfGamesPlayed = matchData =>{
 
     return matchData;   
 };
-/**
- * Converts a structure like { 'team':[player, player]} to {player:[team,team]}
- * @param {} nominations 
- */
-const convertToPlayersToTeams = (nominations)=>{
-    return Object.keys(nominations).reduce((outerAcc,team)=>{
-        return nominations[team].map(player=>({'player':player[0],'team':team}))
-                         .reduce((acc, val)=>{
-                             let playerTeamArray = (acc[val.player] || []);
-                             playerTeamArray.push(val.team);
-                            return {
-                                ...acc,
-                                [val.player]:playerTeamArray
-                            }
-                         },outerAcc)
-    },{});
-}
-
-const findPlayersInMultipleTeams = playersList => Object.keys(playersList).filter(val=>Object.keys(playersList[val]).length > 1);
-
-const findPlayersNominatedForMultipleTeamsInTheSameDivision = (teamDivsionMap, playerToNominatedTeamMap)=>{
-    let tempResult = 
-         Object.keys(playerToNominatedTeamMap)
-          .map(player=>({
-              'player':player,
-              'teams':playerToNominatedTeamMap[player]
-                        .map(team=>teamDivsionMap[team])
-                        .reduce((acc,team)=>({...acc,[team]:(acc[team]||0)+1}),{})
-          }));
-         
-    return tempResult
-          .filter(val=>Object.values(val.teams).find(val=>val>1))
-          .map(entry=>entry.player);
-};
-
-/**
- * List all the appearences against a player
- * @param {*} matchData 
- */
-const generateAppearenceData = (matchData) =>{
-    return matchData.reduce((acc,match)=>{
-        match.data.forEach(game=>{
-            let player1Name = game[constants.player1Index];
-            let matchesData = (acc[player1Name] || []);
-            matchesData.push({'team':match.header[constants.headerTeam1Index],'date':match.header[constants.headerMatchDateIndex]});
-            acc[player1Name] = matchesData;
-
-            let player2Name = game[constants.player2Index];
-            matchesData = (acc[player2Name] || []);
-            matchesData.push({'team':match.header[constants.headerTeam2Index],'date':match.header[constants.headerMatchDateIndex]});
-            acc[player2Name] = matchesData;
-        });
-
-        return acc;
-    },{});
-}
-
-const generateMainTeamList = (playerAppearences, nominations)=>{
-    let result = {};
-    Object.keys(playerAppearences)
-          .filter(player=>!nominations[player])
-          .forEach(player=>{
-                // If the player makes three appearences for a team, then nominated for it.
-                let countOfAppearences = {}
-                // Need to sort the appearences by date here....
-                for(let i = 0;i<playerAppearences[player].length;i++){
-                    let entry = playerAppearences[player][i]
-                    countOfAppearences[entry.team]= (countOfAppearences[entry.team] || 0)+1;
-
-                    if (countOfAppearences[entry.team] == 3){
-                        result[player] = entry.team;
-                        i = playerAppearences[player].length;
-                        break;
-                    }
-                }
-          })
-
-    return result;
-}
-
-const makeTwoTeamLists = match =>{
-    let result = {
-        'homeTeam':{
-            'teamName':match.header[constants.headerTeam1Index].trim(),
-            'team':[]
-        },
-        'awayTeam': {
-            'teamName':match.header[constants.headerTeam2Index].trim(),
-            'team':[]
-        }
-    }
-    
-    match.data.forEach(element => {
-        result.homeTeam.team.push({
-            'name':element[constants.player1Index],
-            'grade':utilities.parseGrade(element[constants.player1GradeIndex])
-        });
-
-        result.awayTeam.team.push({
-            'name':element[constants.player2Index],
-            'grade':utilities.parseGrade(element[constants.player2GradeIndex]) 
-        });
-    });
-
-    return result;
-}
-
-/**
- * Checks that players are in grade order taking into grade tolerance
- * @param {*} team The team 
- * @param {*} gradeTolerance The tolerance
- */
-const checkPlayersInGradeOrder = (team, gradeTolerance=10)=>{
-    let result = [];
-    let teamList = team.team.slice(0,team.team.length);//This should always be 0 - 4.
-    let lastPlayer = teamList.shift();
-
-    while(teamList.length > 0){
-        let currentPlayer = teamList.shift();
-
-        if (currentPlayer.grade > lastPlayer.grade+gradeTolerance){
-            result.push({
-                'type':'Player Out of Grade Order',
-                'player':currentPlayer.name,
-                'team':team.teamName
-
-            })
-            result[team.teamName] = (result[team.teamName] || []).push(currentPlayer);
-        }
-
-        lastPlayer = currentPlayer;
-    }
-
-    return result;
-};
-
-/**
- * Checks that players' grades are below or match nominated team
- * @param {} team 
- * @param {*} nominations 
- */
-const checkPlayersAgainstNominatedPlayerGrade = (team, nominations)=>{
-    let result = [];
-    let teamNomination = nominations[team.teamName];
-    if (team.teamName === 'Bury St Edmunds E')
-        console.log("Bury Error");
-    try{
-        team.team.forEach((player,index)=>{
-            let nominatedPlayerInfo = teamNomination[index];
-            
-            if (player.grade > nominatedPlayerInfo[1])
-                result.push({
-                    type:'Player grade too high',
-                    player:player.name,
-                    'team':team.teamName
-                });
-        });
-    }
-    catch(error){
-        console.log("some problem");
-    }
-
-    return result;
-}
-/**
- * Generates a list of players who played in the team who are substitutes.
- * @param {} team 
- * @param {*} nominatedPlayers 
- */
-const findSubstitutes = (team, nominatedPlayers)=>{
-    return team.team
-               .filter(player=>!(nominatedPlayers[player.name] || []).includes(team.teamName))
-               .map(player=>({
-                        'player':player.name,
-                        'team':team.teamName
-                    }));
-}
 
 ( async ()=>{
 
@@ -306,18 +131,15 @@ const findSubstitutes = (team, nominatedPlayers)=>{
 
     for (let division in suffolkLeagueDivisions){
         let matchData = await utilities.fetchMatches(leagueId,suffolkLeagueDivisions[division]);
-        allMatches.push.apply(allMatches,matchData);
+        repository.addDivisionMatches(division, matchData);
     }
 
-    let playerTeamNominatedFor = convertToPlayersToTeams(nominations);
+    let playerTeamNominatedFor = utilities.convertToPlayersToTeams(nominations);
 
-    let playersNominatedForMoreThanOneTeam = findPlayersNominatedForMultipleTeamsInTheSameDivision(teamToDivision, playerTeamNominatedFor);
+    let playersNominatedForMoreThanOneTeam = utilities.findPlayersNominatedForMultipleTeamsInTheSameDivision(teamToDivision, playerTeamNominatedFor);
 
-
-    // List appearences by player
-    let appearencesByPlayer = generateAppearenceData(allMatches);
     // Find any that now have a main team but aren't nominated
-    let playersWithMainTeamButNoNomination = generateMainTeamList(appearencesByPlayer, playerTeamNominatedFor);
+    let playersWithMainTeamButNoNomination = repository.assignNonNominatedPlayersAMainTeam(playerTeamNominatedFor);
 
     // Combine with two sets of nomination info
     for(let player in playersWithMainTeamButNoNomination)
@@ -326,16 +148,16 @@ const findSubstitutes = (team, nominatedPlayers)=>{
     let errors = [];
     let substitutions = [];
     // Now go through every match, check players in grade order or at least within 10   
-    allMatches.forEach((match)=>{
-        match = makeTwoTeamLists(match);
-        errors = [...errors, ...checkPlayersInGradeOrder(match.awayTeam)];
-        errors = [...errors, ...checkPlayersInGradeOrder(match.homeTeam)];
-        errors = [...errors, ...checkPlayersAgainstNominatedPlayerGrade(match.awayTeam, nominations)];
-        errors = [...errors, ...checkPlayersAgainstNominatedPlayerGrade(match.homeTeam, nominations)];
+    repository.allMatches.forEach((match)=>{
+        match = utilities.makeTwoTeamLists(match);
+        errors = [...errors, ...validations.checkPlayersInGradeOrder(match.awayTeam)];
+        errors = [...errors, ...validations.checkPlayersInGradeOrder(match.homeTeam)];
+        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.awayTeam, nominations)];
+        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.homeTeam, nominations)];
 
         // Find any substitutions
-        substitutions = [...substitutions, ...findSubstitutes(match.awayTeam,playerTeamNominatedFor)];
-        substitutions = [...substitutions, ...findSubstitutes(match.homeTeam,playerTeamNominatedFor)];
+        substitutions = [...substitutions, ...utilities.findSubstitutes(match.awayTeam,playerTeamNominatedFor)];
+        substitutions = [...substitutions, ...utilities.findSubstitutes(match.homeTeam,playerTeamNominatedFor)];
     });
 
     // Process the subsitutions into a different structure {'<playerName>':{'<teamName>':appearenceCount}}
