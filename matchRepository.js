@@ -2,6 +2,62 @@
 const constants = require('./constants');
 var utilities = require('./utilities');
 
+const createTeam = (name, division)=>({
+    name, 
+    division
+})
+
+const createMatch = ()=>({
+    homeTeam:{
+        teamName:'',
+        players:[]
+    },
+    awayTeam:{
+        teamName:'',
+        players:[]
+    },
+    date:null
+});
+
+/**
+ * A chess player. 
+ */
+class Player{
+    constructor(name=''){
+        this.name=name;
+        this.code = '';
+        this.grades=[];
+        this.nominations=[];
+        this.substitutions = [];
+    }
+
+    /**
+     * Queries the nomination info to determine if the player was nominated for {@param teamName}
+     * on the given date.
+     * @param {*} teamName 
+     * @param {*} date 
+     */
+    nominatedOnDate(teamName, date){
+        let nominationsForTeam = this.nominations.filter(n=>n.club === teamName);
+        let currentlyValidNomination = nominationsForTeam.filter(n=>n.startDate <= date && (!n.endDate || n.endDate > date));
+        
+        // If a currently valid nomination was found, then use that.
+        return currentlyValidNomination.length > 0;
+    }
+
+    gradeOnDate(date){
+        let relevantGrade;
+        for(let i = 0;i<this.grades.length;i++){
+            let gradeInfo = this.grades[i];
+            if (gradeInfo.date > date)
+                break;
+            relevantGrade = gradeInfo.grade;
+        }
+        
+        return relevantGrade;
+    }
+}
+
 /**
  * Repository for matches. 
  * Provides methods for formatting the data provided.
@@ -9,14 +65,92 @@ var utilities = require('./utilities');
 class MatchRepository{
 
     allMatches = [];
+    playersByName = {};
+    playersByCode = {};
 
     constructor(){
 
     }
+
+    /**
+     * Finds the player from the players lookup or creates a new player object.
+     * @param {*} playerName 
+     * @param {*} playerGrade 
+     * @param {*} matchDate 
+     */
+    createOrFindPlayer = playerName=>{
+        let player = this.playersByName[playerName];
+        if (!player){
+            player = new Player(playerName);
+            this.playersByName[playerName] = player;
+        }
+
+        return player;
+    }
+
+    associatePlayerWithCode = (code, name)=>{
+        let player = this.createOrFindPlayer(name); // Player may not actually have played in SCCA comp - just being used for rating
+        this.playersByCode[code] = player; 
+        player.code = code;
+    }
+    /**
+     * Adds nomination info to the player objects. 
+     * Assumes that nomination changes are added in order in which they occured.
+     */
+    addNominationInfo = nominationRecord=>{
+        let player = this.playersByCode[nominationRecord.playerCode];
+        if (nominationRecord.nominated){
+            player.nominations.push({
+                startDate:nominationRecord.changeDate, 
+                club:nominationRecord.club,
+                endDate:null
+            });
+        }
+        else{
+            let matchingNominations = player.nominations.filter(n=>n.club == nominationRecord.club);
+            let lastMatchingNomination = matchingNominations[matchingNominations.length-1];
+            lastMatchingNomination.endDate = nominationRecord.changeDate;
+        }
+    }
+
+    addPlayerGradeInfo(playerName, gradeInfo){
+        let player = this.playersByName[playerName];
+        if (player)
+            player.grades = gradeInfo;
+    }
     
     addDivisionMatches(division, matches){
         // TODO: Keep division as may be used at a later stage
-        this.allMatches.push(...matches);
+        //this.allMatches.push(...matches);
+
+        matches.forEach(serverMatch=>{
+            let internalMatch = createMatch();
+            internalMatch.date = new Date(serverMatch.header[constants.headerMatchDateIndex]);
+            internalMatch.homeTeam.teamName = serverMatch.header[constants.headerTeam1Index];
+            internalMatch.awayTeam.teamName = serverMatch.header[constants.headerTeam2Index];
+
+            serverMatch.data.forEach(entry=>{
+                let homeTeamPlayerName = entry[constants.player1Index];
+                let homeTeamPlayer = this.createOrFindPlayer(homeTeamPlayerName);
+                internalMatch.homeTeam.players.push(homeTeamPlayer);
+
+                let awayTeamPlayerName = entry[constants.player2Index];
+                let awayTeamPlayer = this.createOrFindPlayer(awayTeamPlayerName);
+                internalMatch.awayTeam.players.push(awayTeamPlayer);
+            });
+
+            this.allMatches.push(internalMatch);
+        });
+    }
+
+    getNominatedTeam = (teamName, date)=>{
+        let playersInTeam = Object.values(this.playersByName)
+                                  .filter(p=>p.nominations.find(n=>n.club === teamName));
+        let nominatedPlayersOnDate = playersInTeam.filter(p=>p.nominatedOnDate(teamName,date));
+        // Sort by descending grade order
+        nominatedPlayersOnDate = nominatedPlayersOnDate.sort((p1,p2)=>p2.gradeOnDate(date)-p1.gradeOnDate(date));
+
+        return nominatedPlayersOnDate;
     }
 
     /**

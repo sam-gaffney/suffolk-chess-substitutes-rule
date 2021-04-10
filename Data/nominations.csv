@@ -1,24 +1,127 @@
-Bury St Edmunds B, Chris J Dorrington (217), Mark R Le-Vine (198), Jaden Jermy (176), Stephen W Ruthen (155) ,SCCA Division 1
-Bury St Edmunds C, Michael Harris (210), Edmund C Player (196), Alexander John Peters (192), Stephen Lewis (172) ,SCCA Division 1
-Bury St Edmunds A, Z Zia Mohammed Quader (169), Adam John (149), Rene M Martinez (146), Alan Watkins (141) ,SCCA Division 2
-Bury St Edmunds D, Jan Balogh (160), Steve Lovell (151), Robert L Jones (144), Jay Magpuyo (136) ,SCCA Division 2
-Bury St Edmunds E, William Gu (113), Richard Myhill (105), Matt Carter (105), Christopher N Shepherd-Rose (99) ,SCCA Division 3
-Bury St Edmunds F, Laureano Garcia (131), Tom Roy (109), Anthony Taylor (108), Hugo Smith (104) ,SCCA Division 3
-Felixstowe A, Peter A Gemmell (174), Phil Hopkins (173), Conrad Simons (163), Ed Kirkham (144) ,SCCA Division 1
-Felixstowe B, Gary Hemsworth (124), Mark J Weidman (118), Alan J Lewis (117), David Robertson (93) ,SCCA Division 2
-Felixstowe C, John WF McAllister (129), Edgar Nightingale (104), Victor C Brazkiewicz (88), Trevor Wright (86) ,SCCA Division 3
-Ipswich A, Shaun D Munson (191), Luke Hill (182), Michael P Cook (175), Ian J Wallis (175) ,SCCA Division 1
-Ipswich B, Graham J Moore (215), Timothy Lunn (188), John A Feavyour (160), John Wright (140) ,SCCA Division 1
-Ipswich C, Alex Sheerin (172), Edward Matthewson (169), David E Brown (154), Les J Jones (131) ,SCCA Division 1
-Ipswich D, Stephen J Gregory (192), Martin Fogg (179), Andrew Shephard (157), Alonso Paez (121) ,SCCA Division 1
-Ipswich E, Samuel J Brennan (148), Ken Lunn (112), Phil Mortonson (105), Roger N Smith (86) ,SCCA Division 3
-Ipswich F, H Roger Holt (148), Adam Wilson (101), Michael GC Spalding (97), Peter T Housden (88) ,SCCA Division 3
-Manningtree A, Andrew P Lewis (212), Philip J Hutchings (168), Leon P Burnett (168), Jim Buis (150) ,SCCA Division 1
-Manningtree C, Rowland Kerr (147), Robert W Stephens (144), John WF McAllister (129), Carl Phillips (120) ,SCCA Division 2
-Manningtree B, Simon Webber (127), John Price (114), David Welsh (112), Adrian Sanderson (111) ,SCCA Division 3
-Saxmundham A, John A Feavyour (160), Malcolm J Lightfoot (160), David E Brown (154), Samuel Gaffney (144) ,SCCA Division 2
-Saxmundham B, Michael E Usher (138), Dominic A Carter (131), Peter J Collicott (115), Andrew Paige (107) ,SCCA Division 3
-Stowmarket, Alex Sheerin (172), Stephen Lewis (172), James Irwin (137), David P Green (123) ,SCCA Division 2
-Sudbury, Robert R Sanders (178), Cameron J Little (148), Andrew J Donnelly (147), Harold Thomas (134) ,SCCA Division 2
-Woodbridge A, Peter A Gemmell (174), Phil Hopkins (173), Timothy J Wesson (141), Chris Skirrow (125) , SCCA Division 2
-Woodbridge B, Samuel Gaffney (144), Mark J Weidman (118), Alan J Lewis (117), Daniel Such (99) ,SCCA Division 3
+playerCode,changeDate,club,nominated
+175238J, 2019-08-06 09:05:35,Bury St Edmunds B,1
+221698L, 2019-08-06 09:05:35,Bury St Edmunds B,1
+301071F, 2019-08-06 09:05:35,Bury St Edmunds B,1
+118359L, 2019-08-06 09:05:35,Bury St Edmunds B,1
+112174B, 2019-08-06 09:05:35,Bury St Edmunds C,1
+136670B, 2019-08-06 09:05:35,Bury St Edmunds C,1
+140705D, 2019-08-06 09:05:35,Bury St Edmunds C,1
+151917H, 2019-08-06 09:05:35,Bury St Edmunds C,1
+312605F, 2019-08-06 09:05:35,Bury St Edmunds A,1
+121193G, 2019-08-06 09:05:35,Bury St Edmunds A,1
+295344E, 2019-08-06 09:05:35,Bury St Edmunds A,1
+147192C, 2019-08-06 09:05:35,Bury St Edmunds A,1
+316421E, 2019-08-06 09:05:35,Bury St Edmunds D,1
+277537C, 2019-08-06 09:05:35,Bury St Edmunds D,1
+113887L, 2019-08-06 09:05:35,Bury St Edmunds D,1
+320086D, 2019-08-06 09:05:35,Bury St Edmunds D,1
+227473F, 2019-08-06 09:05:35,Bury St Edmunds E,1
+264565J, 2019-08-06 09:05:35,Bury St Edmunds E,1
+318725B, 2019-08-06 09:05:35,Bury St Edmunds E,1
+263946E, 2019-08-06 09:05:35,Bury St Edmunds E,1
+315366G, 2019-08-06 09:12:01,Bury St Edmunds E,1
+278053H, 2019-08-06 09:12:01,Bury St Edmunds F,1
+297303A, 2019-08-06 09:12:01,Bury St Edmunds F,1
+308303C, 2019-08-06 09:12:01,Bury St Edmunds F,1
+233843K, 2019-08-06 09:12:01,Bury St Edmunds F,1
+318725B, 2019-08-06 09:12:01,Bury St Edmunds E,0
+151917H, 2019-08-06 09:20:26,Stowmarket,1
+313620G, 2019-08-06 09:20:26,Stowmarket,1
+296198C, 2019-08-06 09:20:26,Stowmarket,1
+150092C, 2019-08-06 09:20:26,Stowmarket,1
+280164E, 2019-08-06 09:23:12,Stowmarket,1
+150092C, 2019-08-06 09:23:12,Stowmarket,0
+275078J, 2019-08-07 15:51:37,Felixstowe A,1
+111141D, 2019-08-07 15:51:37,Felixstowe A,1
+270183C, 2019-08-07 15:51:37,Felixstowe A,1
+191416K, 2019-08-07 15:51:37,Felixstowe A,1
+127951J, 2019-08-07 15:51:37,Felixstowe B,1
+114347F, 2019-08-07 15:51:37,Felixstowe B,1
+140706F, 2019-08-07 15:51:37,Felixstowe B,1
+201137C, 2019-08-07 15:54:38,Felixstowe B,1
+123427E, 2019-08-07 15:54:38,Felixstowe C,1
+302344J, 2019-08-07 15:54:38,Felixstowe C,1
+298612H, 2019-08-07 15:54:38,Felixstowe C,1
+299820J, 2019-08-07 15:54:38,Felixstowe C,1
+282765H, 2019-08-08 00:57:28,Bury St Edmunds E,1
+263946E, 2019-08-08 00:57:28,Bury St Edmunds E,0
+290418E, 2019-08-08 01:00:17,Saxmundham A,1
+110497E, 2019-08-08 01:00:17,Saxmundham A,1
+251093F, 2019-08-08 01:00:17,Saxmundham A,1
+252177F, 2019-08-08 01:00:17,Saxmundham A,1
+298542B, 2019-08-08 01:00:17,Saxmundham B,1
+295131K, 2019-08-08 01:00:17,Saxmundham B,1
+264746B, 2019-08-08 01:00:17,Saxmundham B,1
+140702J, 2019-08-08 01:00:17,Saxmundham B,1
+318749E, 2019-08-08 01:08:02,Woodbridge A,1
+312616L, 2019-08-08 01:08:02,Woodbridge A,1
+291535C, 2019-08-08 01:08:02,Woodbridge A,1
+320676C, 2019-08-08 01:08:02,Woodbridge A,1
+252177F, 2019-08-08 01:08:02,Woodbridge B,1
+201137C, 2019-08-08 01:08:02,Woodbridge B,1
+263886B, 2019-08-08 01:08:02,Woodbridge B,1
+116949L, 2019-08-08 01:08:02,Woodbridge B,1
+111141D, 2019-08-08 01:18:21,Woodbridge A,1
+114347F, 2019-08-08 01:18:21,Woodbridge B,1
+263886B, 2019-08-08 01:18:21,Woodbridge B,0
+291535C, 2019-08-08 01:18:21,Woodbridge A,0
+329300C, 2019-08-08 01:19:33,Woodbridge A,1
+320676C, 2019-08-08 01:19:33,Woodbridge A,0
+185499K, 2019-08-08 07:38:24,Sudbury,1
+245164F, 2019-08-08 07:38:24,Sudbury,1
+118460L, 2019-08-08 07:38:24,Sudbury,1
+221209C, 2019-08-08 07:38:24,Sudbury,1
+309169H, 2019-08-09 04:37:11,Bury St Edmunds A,1
+147192C, 2019-08-09 04:37:11,Bury St Edmunds A,0
+150092C, 2019-08-09 12:05:19,Stowmarket,1
+313620G, 2019-08-09 12:05:19,Stowmarket,0
+114349K, 2019-08-21 06:53:16,Manningtree A,1
+293417G, 2019-08-21 06:53:16,Manningtree A,1
+147583G, 2019-08-21 06:53:16,Manningtree A,1
+221240H, 2019-08-21 06:53:16,Manningtree A,1
+128639A, 2019-08-21 06:53:16,Manningtree C,1
+313723F, 2019-08-21 06:53:16,Manningtree C,1
+123427E, 2019-08-21 06:53:16,Manningtree C,1
+127956H, 2019-08-21 06:53:16,Manningtree C,1
+320677E, 2019-08-21 06:53:16,Manningtree B,1
+261805K, 2019-08-21 06:53:16,Manningtree B,1
+118462D, 2019-08-21 06:53:16,Manningtree B,1
+257342J, 2019-08-21 06:53:16,Manningtree B,1
+291535C, 2019-08-31 02:56:55,Ipswich A,1
+121038F, 2019-08-31 02:56:55,Ipswich A,1
+108778C, 2019-08-31 02:56:55,Ipswich A,1
+108376E, 2019-08-31 02:56:55,Ipswich A,1
+115711F, 2019-08-31 02:56:55,Ipswich B,1
+114679J, 2019-08-31 02:56:55,Ipswich B,1
+180291E, 2019-08-31 02:56:55,Ipswich B,1
+110497E, 2019-08-31 03:02:22,Ipswich B,1
+280164E, 2019-08-31 03:02:22,Ipswich C,1
+115103E, 2019-08-31 03:02:22,Ipswich C,1
+281107J, 2019-08-31 03:02:22,Ipswich E,1
+114676C, 2019-08-31 03:02:22,Ipswich E,1
+233838F, 2019-08-31 03:02:22,Ipswich E,1
+119354F, 2019-08-31 03:02:22,Ipswich E,1
+112914E, 2019-08-31 03:02:22,Ipswich F,1
+113051B, 2019-08-31 03:02:22,Ipswich F,1
+287746G, 2019-08-31 03:02:22,Ipswich F,1
+119463L, 2019-08-31 03:02:22,Ipswich F,1
+185206B, 2019-09-06 14:47:04,Ipswich A,1
+113849C, 2019-09-06 14:47:04,Ipswich C,1
+252129F, 2019-09-06 14:47:04,Ipswich D,1
+111689H, 2019-09-06 14:47:04,Ipswich D,1
+160502B, 2019-09-06 14:47:04,Ipswich D,1
+140699B, 2019-09-06 14:47:04,Ipswich D,1
+108376E, 2019-09-06 14:47:04,Ipswich A,0
+115973C, 2019-09-08 13:30:15,Ipswich A,1
+251093F, 2019-09-08 13:30:15,Ipswich C,1
+291535C, 2019-09-08 13:30:15,Ipswich A,0
+136202B, 2019-09-14 06:00:43,Stowmarket,1
+150092C, 2019-09-14 06:00:43,Stowmarket,0
+275078J, 2019-09-14 06:01:56,Woodbridge A,1
+329300C, 2019-09-14 06:01:56,Woodbridge A,0
+263821G, 2019-11-05 07:01:54,Woodbridge B,1
+116949L, 2019-11-05 07:01:54,Woodbridge B,0
+188520A, 2020-01-15 20:10:09,Felixstowe C,1
+298612H, 2020-01-15 20:10:09,Felixstowe C,0
+150092C, 2020-01-30 13:55:10,Stowmarket,1
+136202B, 2020-01-30 13:55:10,Stowmarket,0

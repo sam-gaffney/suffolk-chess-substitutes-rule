@@ -123,13 +123,15 @@ const findPlayersNominatedForMultipleTeamsInTheSameDivision = (teamDivsionMap, p
  * Generates a list of players who played in the team who are substitutes.
  * @param {} team 
  * @param {*} nominatedPlayers 
+ * @param {} date The date the match occured that the substitution occured in.
  */
-const findSubstitutes = (team, nominatedPlayers)=>{
-    return team.team
-               .filter(player=>!(nominatedPlayers[player.name] || []).includes(team.teamName))
+const findSubstitutes = (team, nominatedPlayers, date)=>{
+    return team.players
+               .filter(player=>!nominatedPlayers.includes(player))
                .map(player=>({
-                        'player':player.name,
-                        'team':team.teamName
+                        player,
+                        team:team.teamName,
+                        date
                     }));
 }
 

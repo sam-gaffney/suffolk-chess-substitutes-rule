@@ -4,6 +4,7 @@ const utilities = require('./utilities.js');
 const constants = require('./constants.js');
 const repository = require('./matchRepository.js');
 const validations = require('./validations.js');
+const dataFiles = require('./dataFiles.js');
 
 
 const leagueId = 37698;
@@ -90,38 +91,8 @@ const generateListOfGamesPlayed = matchData =>{
     const teamToDivision = {};
 
     // Read in all the nominations from a file
-    await new Promise((resolve, reject)=>{
-        fs.createReadStream('./Data/nominations.csv')
-          .pipe(csv())
-          .on('data',row=>{
-                let teamName = row[0];
-                let players = [];
-                for(let i=1;i<5;i++){
-                    let playerArray = [];
-                    let parts = row[i].split(" ").filter(entry=>!!entry);
-                    if (parts[0].trim() === "()") continue;//No entry in nominations table apaz
-                    try{
-                    var grade = /\((\d+)\)/g.exec(parts[parts.length-1])[1];
-                    }
-                    catch(error){
-                        console.log("help");
-                    }
-                    playerArray.push(grade);
-                    let name = parts[parts.length-2]+", ";
-                    for(let j=0;j<parts.length-2;j++)
-                        name+=parts[j]+" ";
-                    name = name.trim();
-                    playerArray.unshift(name);
+//    await new Promise(dataFiles.readNominationsFile);
 
-                    players.push(playerArray);
-                }
-                // Update the nominations map
-                nominations[teamName] = players;
-                teamToDivision[teamName] = row[row.length-1];
-            })
-          .on('end',()=>resolve());
-    });
-      
 
     const compareDivsions = (divisionA, divisionB)=> divisionOrder[divisionA] - divisionOrder[divisionB];
 
@@ -134,30 +105,38 @@ const generateListOfGamesPlayed = matchData =>{
         repository.addDivisionMatches(division, matchData);
     }
 
-    let playerTeamNominatedFor = utilities.convertToPlayersToTeams(nominations);
+    await new Promise(dataFiles.readGradesFile(repository));  
+    await new Promise(dataFiles.readNominationsFile(repository));
 
-    let playersNominatedForMoreThanOneTeam = utilities.findPlayersNominatedForMultipleTeamsInTheSameDivision(teamToDivision, playerTeamNominatedFor);
 
-    // Find any that now have a main team but aren't nominated
-    let playersWithMainTeamButNoNomination = repository.assignNonNominatedPlayersAMainTeam(playerTeamNominatedFor);
+    // let playerTeamNominatedFor = utilities.convertToPlayersToTeams(nominations);
 
-    // Combine with two sets of nomination info
-    for(let player in playersWithMainTeamButNoNomination)
-        playerTeamNominatedFor[player] = [playersWithMainTeamButNoNomination[player]];
+    // let playersNominatedForMoreThanOneTeam = utilities.findPlayersNominatedForMultipleTeamsInTheSameDivision(teamToDivision, playerTeamNominatedFor);
+
+    // // Find any that now have a main team but aren't nominated
+    // let playersWithMainTeamButNoNomination = repository.assignNonNominatedPlayersAMainTeam(playerTeamNominatedFor);
+
+    // // Combine with two sets of nomination info
+    // for(let player in playersWithMainTeamButNoNomination)
+    //     playerTeamNominatedFor[player] = [playersWithMainTeamButNoNomination[player]];
 
     let errors = [];
     let substitutions = [];
     // Now go through every match, check players in grade order or at least within 10   
     repository.allMatches.forEach((match)=>{
-        match = utilities.makeTwoTeamLists(match);
-        errors = [...errors, ...validations.checkPlayersInGradeOrder(match.awayTeam)];
+        let homeTeamNominations = repository.getNominatedTeam(match.homeTeam.teamName, match.date);
+        let awayTeamNominations = repository.getNominatedTeam(match.awayTeam.teamName, match.date);
+
         errors = [...errors, ...validations.checkPlayersInGradeOrder(match.homeTeam)];
-        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.awayTeam, nominations)];
-        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.homeTeam, nominations)];
+        errors = [...errors, ...validations.checkPlayersInGradeOrder(match.awayTeam)];
+        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.homeTeam, homeTeamNominations, match.date)];
+        errors = [...errors, ...validations.checkPlayersAgainstNominatedPlayerGrade(match.awayTeam, awayTeamNominations, match.date)];
+
 
         // Find any substitutions
-        substitutions = [...substitutions, ...utilities.findSubstitutes(match.awayTeam,playerTeamNominatedFor)];
-        substitutions = [...substitutions, ...utilities.findSubstitutes(match.homeTeam,playerTeamNominatedFor)];
+        substitutions = [...substitutions, ...utilities.findSubstitutes(match.awayTeam, awayTeamNominations, match.date)];
+        substitutions = [...substitutions, ...utilities.findSubstitutes(match.homeTeam, homeTeamNominations, match.date)];
+
     });
 
     // Process the subsitutions into a different structure {'<playerName>':{'<teamName>':appearenceCount}}
