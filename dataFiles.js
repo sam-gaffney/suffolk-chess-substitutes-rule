@@ -29,7 +29,7 @@ const readGradesFile = matchRepository => (resolve, reject)=>{
         });
         grades.push({
             grade:Number(row['Jan Standard Grade']),
-            date:new Date('2020-01-31')
+            date:new Date('2020-01-1')
         });
         matchRepository.associatePlayerWithCode(row['ECF Ref'].trim(), playerName);
         matchRepository.addPlayerGradeInfo(playerName, grades);

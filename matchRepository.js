@@ -2,6 +2,12 @@
 const constants = require('./constants');
 var utilities = require('./utilities');
 
+const createNomination= (startDate, team, division) => ({
+    startDate, 
+    team,
+    endDate:null,
+});
+
 const createTeam = (name, division)=>({
     name, 
     division
@@ -9,15 +15,22 @@ const createTeam = (name, division)=>({
 
 const createMatch = ()=>({
     homeTeam:{
-        teamName:'',
+        team:null,
         players:[]
     },
     awayTeam:{
-        teamName:'',
+        team:null,
         players:[]
     },
     date:null
 });
+
+const findValidNominationOnDate = (teams, date)=>{
+    let currentlyValidNominations = teams.filter(n=>n.startDate <= date && (!n.endDate || n.endDate > date));
+        
+    // If a currently valid nomination was found, then use that.
+    return currentlyValidNominations;
+}
 
 /**
  * A chess player. 
@@ -29,6 +42,51 @@ class Player{
         this.grades=[];
         this.nominations=[];
         this.substitutions = [];
+        this.divisions = [];
+    }
+
+    /**
+     * Adds a substitution record
+     * @param {*} team 
+     * @param {*} date 
+     */
+    addSubstitution(team, match){
+        let date = match.date;
+        this.substitutions.push({
+            date,
+            team,
+            match,
+        });
+
+        // Check to see if the main team requirement has been met
+        let teamAndAppearanceCount = {};
+        for(let i = 0;i<this.substitutions.length;i++){
+            let substitution = this.substitutions[i];
+
+            let noAppearancesForTeam = (teamAndAppearanceCount[substitution.team.name] || 0) + 1;
+            teamAndAppearanceCount[substitution.team.name] = noAppearancesForTeam;
+
+            let validNominations = this.teamNominatedForOnDate(date, team.division);
+            // If more appearances than the threshold and no main team, then team becomes main team.                                                                                                                                 
+            if (validNominations.length == 0 && noAppearancesForTeam >= constants.MAX_APPEARENCES_FOR_TEAM){
+                // Add an entry in the nominations array
+                let mainTeamEntry = createNomination(date, substitution.team);
+
+                // Now search through nominations to see if this ended and, if so, when
+                let nextNomination = this.nominations.find(n=>n.startDate < mainTeamEntry.date);
+                let insertionIndex = this.nominations.length;
+                if (nextNomination){
+                    mainTeamEntry.endDate = nextNomination.startDate;
+                    insertionIndex = this.nominations.indexOf(nextNomination)-1;
+                    if (insertionIndex < -1)
+                        insertionIndex =0;
+                }
+                this.nominations.splice(insertionIndex, 0, mainTeamEntry);
+                
+            }
+        }
+
+        
     }
 
     /**
@@ -38,11 +96,36 @@ class Player{
      * @param {*} date 
      */
     nominatedOnDate(teamName, date){
-        let nominationsForTeam = this.nominations.filter(n=>n.club === teamName);
-        let currentlyValidNomination = nominationsForTeam.filter(n=>n.startDate <= date && (!n.endDate || n.endDate > date));
+        let nominationsForTeam = this.nominations.filter(n=>n.team.name === teamName);
+        let currentlyValidNomination = findValidNominationOnDate(nominationsForTeam, date);
         
         // If a currently valid nomination was found, then use that.
         return currentlyValidNomination.length > 0;
+    }
+    /**
+     * Queries the nomination info and returns all valid nominations for the date.
+     * @param {*} date 
+     * @param {*} division
+     */
+    teamNominatedForOnDate(date, division){
+        let validNominations = findValidNominationOnDate(this.nominations, date);
+        if (division){
+            validNominations = validNominations.filter(n=>n.team.division == division);
+        }
+
+        return validNominations
+    }
+
+    /**
+     * Queries the nomination info and returns all valid nominations for the date for the specified club.
+     * @param {*} date 
+     * @param {*} club 
+     */
+    teamNominatedForClub(date, club){
+        let validNominations = findValidNominationOnDate(this.nominations, date);
+        validNominations = validNominations.filter(n=>n.team.club == club);
+
+        return validNominations[0];
     }
 
     gradeOnDate(date){
@@ -67,6 +150,8 @@ class MatchRepository{
     allMatches = [];
     playersByName = {};
     playersByCode = {};
+    teamsByName = {};
+    teamsByClub = {};
 
     constructor(){
 
@@ -87,6 +172,20 @@ class MatchRepository{
 
         return player;
     }
+    
+    createOrFindTeam = (teamName, division) =>{
+        let team = this.teamsByName[teamName];
+        if (!team){
+            team = createTeam(teamName, division);
+            this.teamsByName[teamName] = team;
+
+            let club = utilities.findClubFromTeamName(teamName);
+            this.teamsByClub[club] = [...(this.teamsByClub[club]||[]), team];
+            team.club = club;
+        }
+
+        return team;
+    }
 
     associatePlayerWithCode = (code, name)=>{
         let player = this.createOrFindPlayer(name); // Player may not actually have played in SCCA comp - just being used for rating
@@ -99,15 +198,10 @@ class MatchRepository{
      */
     addNominationInfo = nominationRecord=>{
         let player = this.playersByCode[nominationRecord.playerCode];
-        if (nominationRecord.nominated){
-            player.nominations.push({
-                startDate:nominationRecord.changeDate, 
-                club:nominationRecord.club,
-                endDate:null
-            });
-        }
+        if (nominationRecord.nominated)
+            player.nominations.push(createNomination(nominationRecord.changeDate, this.teamsByName[nominationRecord.club]));
         else{
-            let matchingNominations = player.nominations.filter(n=>n.club == nominationRecord.club);
+            let matchingNominations = player.nominations.filter(n=>n.team.name == nominationRecord.club);
             let lastMatchingNomination = matchingNominations[matchingNominations.length-1];
             lastMatchingNomination.endDate = nominationRecord.changeDate;
         }
@@ -120,15 +214,16 @@ class MatchRepository{
     }
     
     addDivisionMatches(division, matches){
-        // TODO: Keep division as may be used at a later stage
-        //this.allMatches.push(...matches);
 
         matches.forEach(serverMatch=>{
+            if (utilities.matchNotPlayed(serverMatch)) 
+                return;
+
             let internalMatch = createMatch();
             internalMatch.date = new Date(serverMatch.header[constants.headerMatchDateIndex]);
-            internalMatch.homeTeam.teamName = serverMatch.header[constants.headerTeam1Index];
-            internalMatch.awayTeam.teamName = serverMatch.header[constants.headerTeam2Index];
-
+            internalMatch.homeTeam.team = this.createOrFindTeam(serverMatch.header[constants.headerTeam1Index].trim(), division);
+            internalMatch.awayTeam.team = this.createOrFindTeam(serverMatch.header[constants.headerTeam2Index].trim(), division);
+     
             serverMatch.data.forEach(entry=>{
                 let homeTeamPlayerName = entry[constants.player1Index];
                 let homeTeamPlayer = this.createOrFindPlayer(homeTeamPlayerName);
@@ -141,11 +236,13 @@ class MatchRepository{
 
             this.allMatches.push(internalMatch);
         });
+
+        this.allMatches.sort((m1,m2)=>m1.date - m2.date);
     }
 
     getNominatedTeam = (teamName, date)=>{
         let playersInTeam = Object.values(this.playersByName)
-                                  .filter(p=>p.nominations.find(n=>n.club === teamName));
+                                  .filter(p=>p.nominations.find(n=>n.team.name === teamName));
         let nominatedPlayersOnDate = playersInTeam.filter(p=>p.nominatedOnDate(teamName,date));
         // Sort by descending grade order
         nominatedPlayersOnDate = nominatedPlayersOnDate.sort((p1,p2)=>p2.gradeOnDate(date)-p1.gradeOnDate(date));

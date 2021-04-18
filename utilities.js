@@ -20,7 +20,19 @@ const fetchMatches = async (leagueId,leagueName) =>{
     });
 
     let data = await response.json();
+    // Eliminate duplicates and matches which haven't yet been played.
+    let filteredData = [];
+    let matchesSeen = new Set();
 
+    for(let i = 0;i<data.length;i++){
+        let match = data[i];
+        if (!matchesSeen.has(match.title) && !matchNotPlayed(match)){ 
+            filteredData.push(match);
+            matchesSeen.add(match.title);
+        }
+    }
+
+    data = filteredData;
     // Order the matches by the date played so the earliest are first in the list
     data.sort((e1,e2)=>{
         let val = new Date(e1.header[constants.headerMatchDateIndex]).getTime()-new Date(e2.header[constants.headerMatchDateIndex]).getTime();
@@ -37,7 +49,7 @@ const fetchMatches = async (leagueId,leagueName) =>{
  * For a club like <Bury St Edmund's> this is clearly problematic if another club was also called Bury.
  * @param {} teamName 
  */
-const findClubFromTeamName = teamName => /\w+/.exec(teamName)[0];
+const findClubFromTeamName = teamName => /(.*)\s?([A-Z])?$/.exec(teamName)[1];
 
 /**
  * Returns the number from a string with a grade + letter (e.g. 180A)
@@ -50,39 +62,7 @@ const parseGrade = gradeString => Number(/\d+/.exec(gradeString)[0]);
  * It is assumed this is the case if both players have a zero grade. 
  * @param {*} element Match element from the LMS data.
  */
-const matchNotPlayed = element => element[constants.player1GradeIndex] === "000" || element[constants.player2GradeIndex] === "000"
-
-/**
- * Takes a match and makes two team lists. 
- * TODO: The way data is stored in the repository should be refactored, making this methods redundant.
- * @param {*} match 
- */
-const makeTwoTeamLists = match =>{
-    let result = {
-        'homeTeam':{
-            'teamName':match.header[constants.headerTeam1Index].trim(),
-            'team':[]
-        },
-        'awayTeam': {
-            'teamName':match.header[constants.headerTeam2Index].trim(),
-            'team':[]
-        }
-    }
-    
-    match.data.forEach(element => {
-        result.homeTeam.team.push({
-            'name':element[constants.player1Index],
-            'grade':parseGrade(element[constants.player1GradeIndex])
-        });
-
-        result.awayTeam.team.push({
-            'name':element[constants.player2Index],
-            'grade':parseGrade(element[constants.player2GradeIndex]) 
-        });
-    });
-
-    return result;
-}
+const matchNotPlayed = element => element.data[0][constants.player1GradeIndex] === "000" || element.data[0][constants.player2GradeIndex] === "000"
 
 /**
  * Converts a structure like { 'team':[player, player]} to {player:[team,team]}
@@ -120,29 +100,27 @@ const findPlayersNominatedForMultipleTeamsInTheSameDivision = (teamDivsionMap, p
 };
 
 /**
- * Generates a list of players who played in the team who are substitutes.
+ * FInd players who are subtitues and adds a record of the fact to the 
+ * players object.
  * @param {} team 
  * @param {*} nominatedPlayers 
  * @param {} date The date the match occured that the substitution occured in.
  */
 const findSubstitutes = (team, nominatedPlayers, date)=>{
-    return team.players
-               .filter(player=>!nominatedPlayers.includes(player))
-               .map(player=>({
-                        player,
-                        team:team.teamName,
-                        date
-                    }));
+   return team.players.filter(player=>!nominatedPlayers.includes(player) && player.name != "Default");
 }
+
+
+const compareDivsions = (divisionA, divisionB)=> constants.divisions[divisionA] -constants. divisions[divisionB];
 
 module.exports = {
     fetchMatches, 
     findClubFromTeamName, 
     parseGrade,
     matchNotPlayed,
-    makeTwoTeamLists,
     convertToPlayersToTeams,
     findPlayersInMultipleTeams,
     findPlayersNominatedForMultipleTeamsInTheSameDivision,
     findSubstitutes,
+    compareDivsions,
 }
