@@ -6,13 +6,10 @@ const repository = require('./matchRepository.js');
 const validations = require('./validations.js');
 const dataFiles = require('./dataFiles.js');
 
-
-const leagueId = 37698;
-
 ( async ()=>{
 
     for (let divisionName in constants.divisions){
-        let matchData = await utilities.fetchMatches(leagueId,divisionName);
+        let matchData = await utilities.fetchMatches(constants.leagueId,divisionName);
         repository.addDivisionMatches(divisionName, matchData);
 
         // calculate the number of substitutions allowed
