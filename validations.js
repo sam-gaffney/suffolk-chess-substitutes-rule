@@ -43,15 +43,19 @@ const checkValidNumberOfSubstitutionsUpOrDown = (players, match, team)=>{
 
 
         for(let division in subCount){
-            let noTeamsPlayedForInDivision = Object.keys(subCount[division]).length;
+            let divisionInfo = subCount[division];
+            let noTeamsPlayedForInDivision = Object.keys(divisionInfo).length -1; // -1 to account for the firstAppearence key
             // If played for more than one team in the same division (except the third division)
             // then error
             if (noTeamsPlayedForInDivision > 1 && division != constants.thirdDivision){
-                result.push({
-                    type:'Subsitution in same division!',
-                    player,
-                    match
-                });
+                // Unless this is the team you first player for
+                if (divisionInfo.firstAppearance != team.name){
+                    result.push({
+                        type:'Substitution in same division!',
+                        player,
+                        match
+                    });
+                }
             }
 
             if (!nomination) // If not nominated for a team yet upwards, downwards substitutions a bit meaningless 
